@@ -102,7 +102,7 @@ exports.Parser = class Parser
         isIndexed = if @dirty then "[?]" else if @catcodes then "[+]" else "[-]"
         L.logindent 'pcall',
             "? #{@toShortString(80)}, #{if args[0] then (args[0]+", ") else ''
-            }next token = #{lx.peek()} #{isIndexed}"
+}next token = #{lx.peek()} #{isIndexed}"
 
         if @dirty then @reindex()
         bookmark = lx.save()
