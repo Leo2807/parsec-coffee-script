@@ -172,7 +172,7 @@ exports.Parser = class Parser
     # TODO: add support for constant parsers, to optimize reindexing when
     # applicable
     reindexInternal: ->
-        @error "TODO: implement reindexInternal"
+        console.log "TODO: implement reindexInternal"
 
     # When a change is made to this parser, notify all parsers who
     # registered for update notifications.
