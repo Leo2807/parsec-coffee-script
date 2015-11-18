@@ -3,9 +3,9 @@
 #
 
 L = require './log'
-util=require 'util'
+util = require 'util'
 
-this.exports = this unless process?
+@exports = @ unless process?
 
 # Returned to indicate that a parser can't parse the given token stream
 fail  = exports.fail  = { toString: -> "<FAIL>" }
@@ -14,7 +14,7 @@ fail  = exports.fail  = { toString: -> "<FAIL>" }
 # token stream, but this token stream is invalid.
 error = exports.error = { toString: -> "<ERROR>" }
 
-lastUid=1
+lastUid = 1
 
 #-------------------------------------------------------------------------------
 # Check that x is either a parser, or something that can be sensibly
@@ -28,7 +28,7 @@ lastUid=1
 #-------------------------------------------------------------------------------
 lift = exports.lift = (x) ->
     return     x                 if x instanceof Parser
-    return new Wrap(x...)        if x instanceof Array and x.length==1
+    return new Wrap(x...)        if x instanceof Array and x.length == 1
     return new Sequence(x...)    if x instanceof Array
     return new LiftedFunction(x) if x instanceof Function
     return     keyword(x)        if typeof x is 'string'
@@ -110,13 +110,15 @@ exports.Parser = class Parser
         x = @parseInternal(lx, args...)
 
         if x is fail
-            L.logdedent('pcall', "- #{@toShortString()} failed on #{lx.peek().catcode}.")
+            L.logdedent('pcall',
+                "- #{@toShortString()} failed on #{lx.peek().catcode}.")
             lx.restore bookmark
             return fail
         else
             if @builder? then x = @builder x
             (x = t(x)) for t in @transformers
-            L.logdedent('pcall', "+ #{@toShortString()} succeeded, returned '#{x}'.")
+            L.logdedent('pcall',
+                "+ #{@toShortString()} succeeded, returned '#{x}'.")
             lx.restore bookmark if x is fail
             return x
 
@@ -132,12 +134,13 @@ exports.Parser = class Parser
     setBuilder: (builders...) ->
         [builder] = builders
         if typeof builder == 'number'
-            if builders.length>1
-                indices=builders
-                @builder = (x) -> r=[ ]; r.push x[i] for i in indices; r
-            else n=builder; @builder = (x) -> x[n]
+            if builders.length > 1
+                indices = builders
+                @builder = (x) ->
+                    r = [ ]; r.push x[i] for i in indices; r
+            else n = builder; @builder = (x) -> x[n]
         else if builder instanceof Function then @builder = builder
-        else k=builder; @builder = ->k
+        else k = builder; @builder = -> k
         return @
 
     addTransformer: (t...) ->
@@ -149,7 +152,7 @@ exports.Parser = class Parser
 
         L.logindent 'reindex', "/ reindex '#{@toShortString()}'"
         @reindexInternal()
-        @dirty=false
+        @dirty = false
         L.logdedent 'reindex',
             "\\ reindex '#{@toShortString()}', catcodes=#{@catcodes2string()}"
         return @
@@ -166,28 +169,31 @@ exports.Parser = class Parser
     #   infinite loops (this is closely related to left-recursion
     #   issues with top-down parsers).
     #
-    # TODO: add support for constant parsers, to optimize reindexing when applicable
+    # TODO: add support for constant parsers, to optimize reindexing when
+    # applicable
     reindexInternal: ->
+        @error "TODO: implement reindexInternal"
 
     # When a change is made to this parser, notify all parsers who
     # registered for update notifications.
     # Notification procedure:
-    # - a parent parser P's catcodes depend on its child parser C to determine its
-    #   catcodes, and a change in C's catcodes might cause a change in P's catcodes.
+    # - a parent parser P's catcodes depend on its child parser C to determine
+    #   its catcodes, and a change in C's catcodes might cause a change in P's
+    #   catcodes.
     # - P informs C that it needs to be notified about catcodes changes, by
     #   calling C.addListener(P).
     # - C is subjected to an operation which changes its catcodes. It recomputes
     #   its own catcodes, and notifies it listeners, including P.
     # - P receives the notification, updates its catcodes in its implementation
-    #   of @notify; if its own catcodes have changed, it propagates the notification
-    #   through a final supernotify().
+    #   of @notify; if its own catcodes have changed, it propagates the
+    #   notification through a final supernotify().
     #
     # TODO: delay notification until the first parsing occurs, to avoid
     #       useless multiple notifications. Use a "dirty" flag instead,
     #       and perform a check in @parse
     notify: ->
         return if @dirty
-        @dirty=true
+        @dirty = true
         listener.notify() for listener in @listeners
 
     # Register another parser to be notified when this one is updated.
@@ -200,7 +206,7 @@ exports.Parser = class Parser
 
     isListenedBy: (p) ->
         # TODO: only checks cycles of length 1
-        (return true if p==q) for q in @listeners
+        (return true if p == q) for q in @listeners
         return false
 
     toString: -> @name ? "#{@typename}"
@@ -210,15 +216,16 @@ exports.Parser = class Parser
     toShortString: (max) ->
         max ?= 32
         longString = @toString()
-        if longString.length>max
-            return longString[0...max-3] + "..."
+        if longString.length > max
+            return longString[0...max - 3] + "..."
         else return longString
 
-    error: (msg) -> throw new Error @toString()+": ParsingError: "+msg
+    error: (msg) -> throw new Error @toString() + ": ParsingError: " + msg
 
     catcodes2string: ->
-        if @catcodes
-            "{ " + ("'#{k.replace /^keyword\-/, '!'}'" for k of @catcodes).join(", ") + " }"
+        if @catcodes "{ " +
+            ("'#{k.replace /^keyword\-/, '!'}'" for k of @catcodes).join(", ") +
+            " }"
         else
             "NOCATCODES"
 
@@ -248,15 +255,15 @@ exports.Const = class Const extends Parser
     # valueKeyed: if true, the value is expected to be included in the key.
     constructor: (@t, valueKeyed, values...) ->
         super
-        if values.length>0
+        if values.length > 0
             @values = { }
-            (@values[x]=true) for x in values
+            (@values[x] = true) for x in values
 
         @catcodes = { }
         if valueKeyed?
-            if @t=='keyword' then @name='!'+values.join '-'
+            if @t == 'keyword' then @name = '!' + values.join '-'
             else @name = @t + '-' + values.join '-'
-            (@catcodes[@t+'-'+v] = true) for v in values
+            (@catcodes[@t + '-' + v] = true) for v in values
         else
             @name = @t
             @catcodes[@t] = true
@@ -283,7 +290,8 @@ exports.regex       = new Const 'regex'
 exports.regexFlags  = new Const 'regexFlags'
 exports.interpStart = (values...) -> new Const 'interpStart', true, values...
 exports.interpEnd   = new Const 'interpEnd'
-exports.keyword     = keyword = (values...) -> new Const 'keyword', true, values...
+exports.keyword     = keyword = (values...) ->
+    new Const 'keyword', true, values...
 
 #-------------------------------------------------------------------------------
 # Read any keyword.
@@ -309,7 +317,7 @@ exports.Sequence = class Sequence extends Parser
     constructor: (children...) ->
         super
         @children = (lift child for child in children)
-        @dirty=true
+        @dirty = true
         @backtrack ?= true
 
         # TODO: no need to listen after the epsilon children.
@@ -329,7 +337,7 @@ exports.Sequence = class Sequence extends Parser
             continue if child.epsilon == 'always'
             if child.catcodes
                 (@catcodes[k] = true) for k of child.catcodes
-                unless child.epsilon=='maybe'
+                unless child.epsilon == 'maybe'
                     @epsilon = false
                     break
             else
@@ -349,8 +357,8 @@ exports.Sequence = class Sequence extends Parser
                 else
                     logPrevToken = lx.peek()
                     lx.restore bookmark
-                    L.log 'sequence', ">>>> BACKTRACKING FROM #{
-                        logPrevToken} TO #{lx.peek()} in #{@toShortString()} <<<<<" if i>0
+                    L.log 'sequence', ">>>> BACKTRACKING FROM #{logPrevToken}
+                         TO #{lx.peek()} in #{@toShortString()} <<<<<" if i > 0
                     return fail
             else result.push x
         return result
@@ -398,7 +406,7 @@ exports.Choice = class Choice extends Parser
         i = 0
         len = precsAndChildren.length
         return @ if len is 0
-        while i<len
+        while i < len
             x = precsAndChildren[i++]
             if typeof x == 'number'
                 prec = x
@@ -414,14 +422,14 @@ exports.Choice = class Choice extends Parser
         #TODO: attempt to keep alwaysEpsilon property
 
         # reset indexes
-        @indexed  = { }; @unindexed  = [ ];
+        @indexed  = { }; @unindexed  = [ ]
         @catcodes = { }; @epsilon    = false
 
         # Reindex, set epsilon property
         # TODO: try to preserve epsilon=='always'
         for entry in @list
             entry.parser.reindex()
-            @epsilon='maybe' if entry.parser.epsilon
+            @epsilon = 'maybe' if entry.parser.epsilon
 
         # 1st pass: file indexed children under proper indexes
         for entry in @list
@@ -442,22 +450,24 @@ exports.Choice = class Choice extends Parser
         # 3rd pass: sort every list by precedence
         # TODO: make sure to use a stable sort algorithm,
         # there's no guarantee in Javascript that array::sort is stable.
-        sortByDecreasingPrecedence = (a,b) -> a.prec<b.prec
+        sortByDecreasingPrecedence = (a, b) -> a.prec < b.prec
         for _, x of @indexed
             x.sort sortByDecreasingPrecedence
         @unindexed.sort sortByDecreasingPrecedence
 
-    parseInternal: (lx, prec=0) ->
+    parseInternal: (lx, prec = 0) ->
         nextTokenCatcode = lx.peek().catcode
         entries = @indexed[nextTokenCatcode] ? @unindexed
         for entry, i in entries
             break if entry.prec < prec
-            break if entry.assoc=='right' and entry.prec == prec
-            if i>0
+            break if entry.assoc == 'right' and entry.prec == prec
+            if i > 0
                 L.log 'algo', "#{@} didn't succeed with first candidate #{
-                    entries[0].parser} on #{lx.peek()}, trying with #{entry.parser}"
+                    entries[0].parser} on #{lx.peek()}, trying with
+                    #{entry.parser}"
             L.log 'choice',
-                "trying choice #{i+1}/#{entries.length} #{entry.parser} of prec #{entry.prec}"
+                "trying choice #{i+1}/#{entries.length} #{entry.parser} of prec
+                #{entry.prec}"
             result = entry.parser.parse lx
             return result unless result is fail
         return fail
@@ -480,7 +490,7 @@ exports.Maybe = class Maybe extends Parser
 
     reindexInternal: ->
         @parser.reindex()
-        @epsilon  = if @parser.epsilon=='always' then 'always' else 'maybe'
+        @epsilon  = if @parser.epsilon == 'always' then 'always' else 'maybe'
         @catcodes = false # always succeeds -> all catcodes are acceptable
 
     parseInternal: (lx) ->
@@ -533,11 +543,12 @@ exports.List = class List extends Parser
             results.push p
             if @separator? and @separator.parse(lx) is fail then break
 
-        return fail if not @canBeEmpty and results.length==0
+        return fail if not @canBeEmpty and results.length == 0
         return results
 
     toString: ->
-        @name ? if @separator then "List(#{@primary}, #{@separator})" else "List(#{@primary})"
+        @name ? if @separator then "List(#{@primary}, #{@separator})" else
+            "List(#{@primary})"
 
 #-------------------------------------------------------------------------------
 #
@@ -615,7 +626,8 @@ exports.Expr = class Expr extends Parser
         @pstore   = { }
         @prefix.addListener @
 
-    # TODO: support key update if expression parsers eventually support catcodes.
+    # TODO: support key update if expression parsers eventually support
+    # catcodes.
     setPrimary: (primary) ->
         @primary = lift primary
         @primary.addListener @
@@ -626,10 +638,12 @@ exports.Expr = class Expr extends Parser
         @prefix.reindex()
         @primary.reindex()
         if @primary.epsilon
-            @error "Cannot build an expression parser around epsilon primary parser"
+            @error "Cannot build an expression parser around epsilon primary
+                parser"
         if @primary?.catcodes and @prefix.catcodes
             @catcodes = { }
-            (@catcodes[cc]=true) for cc of p.catcodes for p in [@primary,@prefix]
+            (@catcodes[cc] = true) for cc of p.catcodes for p in [@primary,
+                @prefix]
         else @keys = false
 
     # TODO add assoc support; need some modification in choice::add()
@@ -655,7 +669,7 @@ exports.Expr = class Expr extends Parser
         wp = wrap(x.parser).setBuilder((r) -> [x, r])
         @suffix.add x.prec, wp
 
-    parseInternal: (lx, prec=0) ->
+    parseInternal: (lx, prec = 0) ->
         L.logindent 'expr', "parsing starts at precedence #{prec}"
         e = @parsePrefix lx, prec
         if e is fail
@@ -664,7 +678,7 @@ exports.Expr = class Expr extends Parser
         while e2 isnt fail
             e2 = @parseSuffix lx, e, prec
             if e2 is fail then break
-            else e=e2
+            else e = e2
         L.logdedent 'expr', "parsing done at prec #{prec}, e=#{e}"
         return e
 
@@ -688,8 +702,8 @@ exports.Expr = class Expr extends Parser
         L.log 'expr', "#{p.kind} op #{op} found at prec #{prec}"
         if p.kind is 'infix'
             p_prec = p.prec
-            if p.assoc=='left' then p_prec++
-            else if p.assoc=='flat'
+            if p.assoc == 'left' then p_prec++
+            else if p.assoc == 'flat'
                 @error "flat infix operators not implemented"
             e2 = @parse lx, p_prec
             if e2 is fail
@@ -712,7 +726,7 @@ exports.Expr = class Expr extends Parser
 
 # Only succeed if the next token is preceded by some spacing.
 class Space extends Parser
-    constructor: -> super; @dirty=false
+    constructor: -> super; @dirty = false
     typename: "Space"
     epsilon:  'always'
     catcodes: false
@@ -721,7 +735,7 @@ exports.space = new Space()
 
 # Only succeed if the next token is NOT preceded by some spacing.
 class NoSpace extends Parser
-    constructor: -> super; @dirty=false
+    constructor: -> super; @dirty = false
     typename: "NoSpace"
     alwaysEpsilon: true
     epsilon:  'always'
@@ -731,7 +745,7 @@ exports.noSpace = new NoSpace()
 
 # Neutral element: always succeed without consuming any token.
 class One extends Parser
-    constructor: -> super; @dirty=false
+    constructor: -> super; @dirty = false
     typename: "One"
     epsilon: 'always'
     catcodes: false
