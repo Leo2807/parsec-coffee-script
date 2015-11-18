@@ -359,8 +359,11 @@ src.for3 = "a=(b for c in d)"
 
 ast.for3 = [
     (tree 'Op', '=', (tree 'Id', "a"),
-        (tree 'For', [(tree 'Id', "c")], 'in',  (tree 'Id', "d"), [
-            (tree 'Id', "b"))])]
+        (tree 'For', [(tree 'Id', "c")], 'in',  (tree 'Id', "d"),
+            [(tree 'Id', "b")]
+        )
+    )
+]
 
 
 src.for4 = """
@@ -592,4 +595,3 @@ main = (args) ->
 main (process.argv[2...])
 
 #TODO: src finishing with a comment
-
