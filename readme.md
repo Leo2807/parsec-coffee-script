@@ -1,9 +1,9 @@
-                          Parsec Coffee-Script
-                          ===================
-                          <metalua@gmail.com>
+# Parsec Coffee-Script
+Before 2015: <metalua@gmail.com>
 
-About.
-------
+In 2015 and after: <thebrain2000@live.com> *<- ik it's a dumb address*
+
+## About.
 
 Parsec Coffee Script (PCS) is a parser / compiler for the
 coffee-script language, based on parser combinators. The project's aim
@@ -13,8 +13,7 @@ Lua. The resulting compiler, once merged with the official compiler,
 should be usable as a drop-in replacement for it.
 
 
-Roadmap.
---------
+## Roadmap.
 
 The project is decomposed into several steps:
 
@@ -27,14 +26,14 @@ The project is decomposed into several steps:
    API will be based on a static DSL, once PCS is bootstrapped and
    able to define it. [DONE]
 
-3. Implementation of the coffee-script parser (PCS) with GG 
+3. Implementation of the coffee-script parser (PCS) with GG
    [IN PROGRESS].
 
 4. Defining an Abstract Syntax Tree (AST) format [DONE].
 
 5. Merge with Coffee-Script's compiler backend Node.js
 
-At this stage, PCS will be a fully functional Coffee-Script compiler.
+##### At this stage, PCS will be a fully functional Coffee-Script compiler.
 
 6. Implementation of splice (the fundamental operator of static
    metaprogramming).
@@ -55,8 +54,7 @@ At this stage, PCS will be a fully functional Coffee-Script compiler.
     syntax extensions, in order to simplify the AST->js compiler)...
 
 
-A word about static MP and parsec.
-----------------------------------
+## A word about static MP and parsec.
 
 Static metaprogramming allows to execute arbitrary code during
 compilation, and to splice user-program-generated AST fragments into
@@ -69,7 +67,7 @@ regular functions; but the specificity of the parsec approach is the
 use of combinators: functions which take simple parsers as arguments,
 and return a more complex parser as a result.
 
-Benefits of the parsec approach: 
+Benefits of the parsec approach:
 
 - In addition to standard combinators (sequence, choice,
   repetition...), some more specific parsers can be defined,

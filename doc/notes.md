@@ -1,4 +1,5 @@
-Points to raise:
+# Notes
+## Points to raise:
 
 check whether there isn't some inconsitanecy in the way || and binary ? combine.
 
@@ -16,7 +17,7 @@ f(
 )
 translates to f(foo(bar, gnu)), spontaneously reads as f(foo(bar), gnu)
 
-Todo:
+## Todo:
 
 Detect circular dependencies in notification chains, esp. if they
 coincide with left recursions that won't work.

@@ -1,3 +1,4 @@
+# GrammarGenerator
 the GrammarGenerator parsing library--a.k.a "gg"--is based on parser
 combinators: the core idea is that parsers are regular coffeescript
 functions, and that they can be arranged together with combinators,
@@ -71,7 +72,7 @@ disallow empty lists. For instance, list(id, comma) parses lists of
 comma-separated identifiers.
 
 After these hand-waving examples, let's come back and define more
-precisely what's a parser. 
+precisely what's a parser.
 
 First, we need to define what's a (token) stream. A stream is an
 object which can serve elements with or without consumming them. It
@@ -81,16 +82,16 @@ without consumming it. Therefore, successive calls to next() will
 return a different token everytime, but successive calls to peek(n)
 with the same n will always return the same token. Streams also offer
 a save() and a restore() methods, which allow to undo some token
-consumption. 
+consumption.
 
 (Notes to functional programmers: parser combinators are best known in
 Haskell, where they are implemented as purely functional objects: the
-streams cannot be modified, and tokens aren't truly consummed. This is
+streams cannot be modified, and tokens aren't truly consumed. This is
 conceptually beautiful, but impractical to implement and use in
 anything but Haskell; our streams shamelessly embrace side
 effects. Moreover, it is possible to define parser combinators which
 can return not only one, but several different parsings, each
-potentially consumming a different number of tokens. Since this
+potentially consuming a different number of tokens. Since this
 feature is rarely necessary, hard to implement efficiently, and makes
 it difficult to control a grammar's algorithmic complexity, it has not
 been implemented in GrammarGenerator. It is possible to
@@ -129,9 +130,9 @@ we have already presented gg.zero and gg.one, which are parsers rather
 than combinators.
 
 
-External parser API
+# External parser API
 
-Instantiation
+## Instantiation
 
 By convention, an instance of class gg.FooBar can be generated with
 function gg.fooBar(): "gg.fooBar(a, b, c)" is a shortcut for "new
@@ -139,7 +140,7 @@ gg.FooBar(a, b, c)". This convention ligthens the declaration of
 complex combinations.
 
 
-call(stream)
+### call(stream)
 
 This method actually runs the parser on a token stream, and returns
 the result of the parsing. If the parsing fails, the special object
@@ -149,7 +150,7 @@ what has been parsed, most likely a syntax tree. This result can be
 modified by a builder and transformers, see below.
 
 
-setBuilder(f)
+### setBuilder(f)
 
 If a builder is specified, it is applied to the raw parsing result:
 
@@ -166,7 +167,7 @@ If a builder is specified, it is applied to the raw parsing result:
   equivalent to "p.setBuilder((list) -> [list[n1], list[n2], list[n3]])".
 
 
-addTransformer()
+### addTransformer()
 
 A transformer is a function applied to the parser's result, after the
 builder has been called. The differences between a parser and a
@@ -184,10 +185,10 @@ transformer are:
 
 
 
-Combinators
+## Combinators
 
 
-gg.choice([prec_0], child_0, ..., [prec_n], child_n)
+### gg.choice([prec_0], child_0, ..., [prec_n], child_n)
 
 Create a choice operator with the children parsers. Each child can be
 preceded by a number representing its precedence. If a child has no
@@ -207,7 +208,7 @@ token in the stream.
 
 The choice combinator supports an add method:
 
-add([prec_0], child_0, ..., [prec_n], child_n)
+### add([prec_0], child_0, ..., [prec_n], child_n)
 
 It takes the same arguments as the constructor, but allows to add new
 alternatives dynamically. If the addition of new children requires
@@ -217,7 +218,7 @@ invocations won't be more expensive than a single one.
 
 
 
-gg.list(primary, [separator], [canBeEmpty])
+### gg.list(primary, [separator], [canBeEmpty])
 
 if primary parses elements of type X, then gg.list(primary) parses a
 list of Xs. If a separator parser is specified, then it is used between
@@ -233,7 +234,7 @@ primary. Separator elements, if applicable, are discarded.
 
 
 
-gg.sequence(child_0, ..., child_n)
+### gg.sequence(child_0, ..., child_n)
 
 Parse a sequence of elements, i.e. applies parser child_0 on the
 stream, then child_1, etc. The result is the list of all the children
@@ -241,7 +242,7 @@ parsers' results.
 
 
 
-gg.maybe(primary)
+### gg.maybe(primary)
 
 Behaves as the primary parser, except that it never fails. It succeed
 and returns null if primary fails to parse. "gg.maybe(X)" is
@@ -249,24 +250,24 @@ functionally equivalent to "gg.choice(X, gg.one)"
 
 
 
-gg.if(trigger, primary, whenNotTriggered)
+### gg.if(trigger, primary, whenNotTriggered)
 
 first calls parser "trigger". If it succeeds, calls parser "primary"
 and returns its result. If "trigger" fails, returns the constant
-"whenNotTriggered". 
+"whenNotTriggered".
 
 "gg.if(T, P)" parses the same inputs as "gg.maybe(gg.sequence(T, P))",
 but is handy to easily build the result. The equivalent parser, which
 returns the correct result, is as follows
 
 gg.choice(
-    gg.sequence(T,P).setBuilder(1), 
+    gg.sequence(T,P).setBuilder(1),
     gg.wrap(gg.one).setBuilder(->whenNotTriggered)
 )
 
 
 
-gg.liftedFunction(f)
+### gg.liftedFunction(f)
 
 Change a function, which takes a token stream as an argument, into a
 parser. This is necessary to put a function in a combinator. For
@@ -282,7 +283,7 @@ naiveSequence =
 It is more idiomatic to call "gg.lift f" than "gg.liftedFunction f".
 
 
-gg.wrap(parser)
+### gg.wrap(parser)
 
 Simply calls parser, and return its result. The main interest of
 wrapping a parser is to give it a custom builder:
@@ -290,11 +291,11 @@ gg.wrap(X).setBuilder(f) will not modify the parser X, whereas
 X.setBuilder(f) obviously would.
 
 
-gg.filter(predicate)
+### gg.filter(predicate)
 
 
 
-Lifting
+## Lifting
 
 some basic coffeescript objects have a "natural" meaning, when used
 where a parser is expected. strings, lists, functions, 0 and 1 can be
@@ -310,14 +311,14 @@ lifted, i.e. transformed into parsers.
 - gg.lift(p) == p if p is already a parser.
 
 Moreover, whenever a parser constructor or method expects a parser
-parameter, it automatically lifts it to turn it into a parser. 
+parameter, it automatically lifts it to turn it into a parser.
 
 For instance, a complete specification of a parser for a list of comma
 separated identifiers is "gg.list(gg.id, gg.keyword(','))". However,
 thanks to lifting, it can be written simply "gg.list(gg.id, ',')".
 
 
-gg.expr(primary)
+### gg.expr(primary)
 
 This is by far the most complex and most specialized parser provided
 by gg. It allows to build an expression parser, with prefix, infix and
@@ -325,7 +326,7 @@ suffix operators, around a primary parser. the result of "gg.expr(X)"
 is a parser equivalent to "X". However, it supports methods
 addPrefix(), addInfix() and addSuffix() which allow to modify it.
 
-addPrefix({parser, [prec], builder})
+### addPrefix({parser, [prec], builder})
 
 add a prefix operator, with the specified precedence. If the prefix
 parser returns "P", and the expression to which the prefix applies is
@@ -349,22 +350,19 @@ addSuffix({parser, [prec], builder)
 
 
 
-Creating efficient new combinators
+## Creating efficient new combinators
 
 Until now, implementation details have been spared, as we focused on
 combinator users, rather than combinator writers. However, for parsing
 to remain efficient, some non-trivial internal mechanisms are
-required. 
+required.
 
-catcodes
+- catcodes
 
-epsilon productions
+- epsilon productions
 
-change notification
+- change notification
 
-reindexing
+- reindexing
 
-protected API, to extend existing parser classes
-
-
-
+- protected API, to extend existing parser classes
