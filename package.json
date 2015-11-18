@@ -1,0 +1,162 @@
+{
+  "name": "parsec-coffee-script",
+  "version": "0.1.0",
+  "description": "Parsec Coffee Script (PCS) is a parser / compiler for the coffee-script language, based on parser combinators. The project's aim is to add static metaprogramming (i.e. macros + syntax extensibility) to Coffee Script (CS), similar to how Metalua adds such features to Lua. The resulting compiler, once merged with the official compiler, should be usable as a drop-in replacement for it.",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc",
+    "test": "test"
+  },
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Leo2807/parsec-coffee-script.git"
+  },
+  "keywords": [
+    "coffescript",
+    "parser",
+    "combinators"
+  ],
+  "author": "Leo2807 <thebrain2000@live.com>",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/Leo2807/parsec-coffee-script/issues"
+  },
+  "homepage": "https://github.com/Leo2807/parsec-coffee-script#readme",
+  "coffeelintConfig": {
+    "arrow_spacing": {
+      "level": "error"
+    },
+    "braces_spacing": {
+      "level": "warn",
+      "spaces": 0,
+      "empty_object_spaces": 0
+    },
+    "camel_case_classes": {
+      "level": "error"
+    },
+    "coffeescript_error": {
+      "level": "error"
+    },
+    "colon_assignment_spacing": {
+      "level": "ignore",
+      "spacing": {
+        "left": 0,
+        "right": 1
+      }
+    },
+    "cyclomatic_complexity": {
+      "level": "warn",
+      "value": 10
+    },
+    "duplicate_key": {
+      "level": "error"
+    },
+    "empty_constructor_needs_parens": {
+      "level": "ignore"
+    },
+    "ensure_comprehensions": {
+      "level": "warn"
+    },
+    "eol_last": {
+      "level": "ignore"
+    },
+    "indentation": {
+      "value": 2,
+      "level": "error"
+    },
+    "line_endings": {
+      "level": "error",
+      "value": "unix"
+    },
+    "max_line_length": {
+      "value": 80,
+      "level": "error",
+      "limitComments": true
+    },
+    "missing_fat_arrows": {
+      "level": "warn",
+      "is_strict": false
+    },
+    "newlines_after_classes": {
+      "value": 3,
+      "level": "ignore"
+    },
+    "no_backticks": {
+      "level": "error"
+    },
+    "no_debugger": {
+      "level": "warn",
+      "console": false
+    },
+    "no_empty_functions": {
+      "level": "warn"
+    },
+    "no_empty_param_list": {
+      "level": "ignore"
+    },
+    "no_implicit_braces": {
+      "level": "ignore",
+      "strict": true
+    },
+    "no_implicit_parens": {
+      "level": "ignore",
+      "strict": true
+    },
+    "no_interpolation_in_single_quotes": {
+      "level": "warn"
+    },
+    "no_nested_string_interpolation": {
+      "level": "warn"
+    },
+    "no_plusplus": {
+      "level": "ignore"
+    },
+    "no_private_function_fat_arrows": {
+      "level": "warn"
+    },
+    "no_stand_alone_at": {
+      "level": "warn"
+    },
+    "no_tabs": {
+      "level": "error"
+    },
+    "no_this": {
+      "level": "warn"
+    },
+    "no_throwing_strings": {
+      "level": "error"
+    },
+    "no_trailing_semicolons": {
+      "level": "error"
+    },
+    "no_trailing_whitespace": {
+      "level": "error",
+      "allowed_in_comments": false,
+      "allowed_in_empty_lines": true
+    },
+    "no_unnecessary_double_quotes": {
+      "level": "ignore"
+    },
+    "no_unnecessary_fat_arrows": {
+      "level": "warn"
+    },
+    "non_empty_constructor_needs_parens": {
+      "level": "ignore"
+    },
+    "prefer_english_operator": {
+      "level": "ignore",
+      "doubleNotLevel": "ignore"
+    },
+    "space_operators": {
+      "level": "warn"
+    },
+    "spacing_after_comma": {
+      "level": "error"
+    },
+    "transform_messes_up_line_numbers": {
+      "level": "warn"
+    }
+  }
+}
