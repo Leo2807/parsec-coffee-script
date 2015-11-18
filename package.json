@@ -30,8 +30,8 @@
     },
     "braces_spacing": {
       "level": "warn",
-      "spaces": 0,
-      "empty_object_spaces": 0
+      "spaces": 1,
+      "empty_object_spaces": 1
     },
     "camel_case_classes": {
       "level": "error"
@@ -63,7 +63,7 @@
       "level": "ignore"
     },
     "indentation": {
-      "value": 2,
+      "value": 4,
       "level": "error"
     },
     "line_endings": {
@@ -117,7 +117,7 @@
       "level": "warn"
     },
     "no_stand_alone_at": {
-      "level": "warn"
+      "level": "ignore"
     },
     "no_tabs": {
       "level": "error"
