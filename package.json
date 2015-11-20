@@ -7,8 +7,7 @@
     "doc": "doc",
     "test": "test"
   },
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Leo2807/parsec-coffee-script.git"
@@ -19,7 +18,7 @@
     "combinators"
   ],
   "author": "Leo2807 <thebrain2000@live.com>",
-  "license": "BSD",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Leo2807/parsec-coffee-script/issues"
   },
@@ -158,5 +157,8 @@
     "transform_messes_up_line_numbers": {
       "level": "warn"
     }
+  },
+  "devDependencies": {
+    "gulp": "^3.9.0"
   }
 }
