@@ -1,4 +1,4 @@
-this.exports = this unless process?
+@exports = @ unless process?
 
 L = require './log'
 
@@ -27,9 +27,10 @@ NUMBER   = /^(0x[0-9a-fA-F]+)|(([0-9]+(\.[0-9]+)?|\.[0-9]+)(e[+\-]?[0-9]+)?)/
 # * catcode
 #-------------------------------------------------------------------------------
 class Token
-    constructor: (fields) -> (@[k]=v) for k, v of fields
+    constructor: (fields) -> (@[k] = v) for k, v of fields
     toString: ->
-        "#{@t}[#{@i}#{if @v? then ":'#{@v}'" else ""}#{if @s then ' S' else ''}]"
+        "#{@t}[#{@i}#{if @v? then (":'" + @v + "'") else ""}#{
+            if @s then ' S' else ''}]"
 
 #-------------------------------------------------------------------------------
 #
@@ -41,7 +42,7 @@ class Token
 #   key is their first character.
 #   Each array is sorted by decreasing word size.
 #
-# This set is populated with @addKeyword, it allows to differentiate
+# this set is populated with @addKeyword, it allows to differentiate
 # alphanumeric keywords from identifiers, and to recognize multi-characters
 # punctuation keywords.
 #-------------------------------------------------------------------------------
@@ -52,7 +53,7 @@ exports.Keywords = class Keywords
         @add(words...)
 
     addDetailedCatcode: (catcodes...) ->
-        (@detailedCatcodes[cc]=true) for cc in catcodes
+        (@detailedCatcodes[cc] = true) for cc in catcodes
 
     #---------------------------------------------------------------------------
     # Register new keyword(s) for this lexer.
@@ -62,7 +63,7 @@ exports.Keywords = class Keywords
         for word in words
             if word.match /^[A-Za-z_]/
                 @set[word] = true
-            else if (word_len=word.length) > 1
+            else if (word_len = word.length) > 1
                 list = (@set[word[0]] ?= [])
                 list_len = list.length
                 i = 0
@@ -116,9 +117,9 @@ exports.Lexer = class Lexer
     token: (t, v, i) ->
         i = @i unless i?
         s = @spaced
-        catcode = if @keywords.detailedCatcodes[t] then t+"-"+v else t
+        catcode = if @keywords.detailedCatcodes[t] then t + "-" + v else t
         @spaced = false
-        return new Token {t, v, i, s, catcode}
+        return new Token { t, v, i, s, catcode }
 
     #---------------------------------------------------------------------------
     # Return the list of all tokens in @src
@@ -139,7 +140,8 @@ exports.Lexer = class Lexer
     # Debug trace helper
     #---------------------------------------------------------------------------
     pWhere: (msg) ->
-        L.log 'lexer', "#{msg or ''} [#{@i} '#{@src[@i..@i+5].replace( /\n/g,'\\n')}...']"
+        L.log 'lexer', "#{msg or ''} [#{@i} '#{
+            @src[@i..(@i + 5)].replace( /\n/g, '\\n')}...']"
 
     #---------------------------------------------------------------------------
     # Perform one step of tokenization..
@@ -155,13 +157,13 @@ exports.Lexer = class Lexer
     #---------------------------------------------------------------------------
     step: ->
         @pWhere 'step'
-        j=@i
-        @i++ while @src[@i]==' ' or @src[@i]=='\t' #skip whitespace
-        @spaced = true unless @i==j
+        j = @i
+        @i++ while @src[@i] == ' ' or @src[@i] == '\t' #skip whitespace
+        @spaced = true unless @i == j
         src_i = @src[@i]
         if not src_i? #EOF, close all pending indents
             return null unless @indentLevels?
-            L.log 'algo', "flushing indent levels "+@indentLevels
+            L.log 'algo', "flushing indent levels " + @indentLevels
             x = (@token('dedent', v) for v in @indentLevels.reverse())
             @indentLevels = null
             return x
@@ -176,16 +178,16 @@ exports.Lexer = class Lexer
             @spaced = true
             return x
         else if src_i == '/' and @regexAllowedHere()
-            if @src[@i..@i+2] == '///'
+            if @src[@i..@i + 2] == '///'
                 t = @getInterpolation 'regex', '/'
             else t = [ @getString 'regex' ]
-            if (t2=@getRegexFlags()) then t.push t2
+            if (t2 = @getRegexFlags()) then t.push t2
             return t
         else if src_i == '`'
             return [ @getString 'javascript' ]
         else if src_i.match OP_CHARS # must be after regex and backtick
             return [ @getOp() ]
-        else if src_i.match /[0-9]/ or @src[@i..@i+1].match /\.[0-9]/
+        else if src_i.match /[0-9]/ or @src[@i..@i + 1].match /\.[0-9]/
             return [ @getNumber() ]
         else if src_i == '#' #TODO: handle triple-sharps
             @spaced = true
@@ -213,7 +215,7 @@ exports.Lexer = class Lexer
     #    loop until a line with some non-blank, non-comment characters is found
     #    (i.e. comments-only lines are skipped)
     #    i = beginning of line, j = first non-indentation char
-    # 2- Compare this current indentation with previous ones, kept in list
+    # 2- Compare @ current indentation with previous ones, kept in list
     #    @indenLevels
     #
     # Until the first indentation character is found, both '\t' and ' ' are
@@ -239,9 +241,9 @@ exports.Lexer = class Lexer
                 j++ while @src[j] == @indentChar
             src_j = @src[j]
             if src_j == '\n' # blank line
-                i=j+1
+                i = j + 1
             else if src_j == '#' # comment-only line
-                i=j+1
+                i = j + 1
                 i++ until @src[i] == '\n'
             else if not src_j
                 L.log 'lexer', 'finalspace'
@@ -253,8 +255,8 @@ exports.Lexer = class Lexer
 
         # 2- generate tokens
         @i = j
-        indentLevel = j-i
-        lastIndentLevelIdx = @indentLevels.length-1
+        indentLevel = j - i
+        lastIndentLevelIdx = @indentLevels.length - 1
         previousLevel = @indentLevels[lastIndentLevelIdx]
         if previousLevel == indentLevel
             return [ @token 'newline', indentLevel, offset ]
@@ -283,48 +285,55 @@ exports.Lexer = class Lexer
     # TODO: handle indentation fixing for triple-double-quotes.
     #---------------------------------------------------------------------------
     getInterpolation: (type, delimiterChar) ->
-        tripleDelimiter = if @src[@i]==@src[@i+1]==@src[@i+2] then @src[@i..@i+2] else false
+        if (@src[@i] == @src[@i + 1] == @src[@i + 2])
+            tripleDelimiter = @src[@i..@i + 2]
+        else tripleDelimiter = false
         results         = [ ]
-        i               = if tripleDelimiter then @i+3 else @i+1
-        j               = i-1
+        i               = if tripleDelimiter then @i + 3 else @i + 1
+        j               = i - 1
         interpStarted   = false
         loop
             j++
-            @complain "unterminated string" if @len==j
-            k=@src[j]
+            @complain "unterminated string" if @len == j
+            k = @src[j]
             continue unless k == delimiterChar or k == '#'
-            continue if @src[j-1] == '\\'
+            continue if @src[j - 1] == '\\'
             if k == delimiterChar
                 if tripleDelimiter
-                    if @src[j..j+2] == tripleDelimiter then @i=j+3 else continue
-                else @i=j+1
+                    if @src[j..j + 2] == tripleDelimiter
+                        @i = j + 3
+                    else continue
+                else @i = j + 1
                 # End of string
-                unless i==j and results.length>0
+                unless i == j and results.length > 0
                     results.push @token type, @src[i...j], i
                 break
-            else if @src[j+1] == '{' # we already know that @src[j]=='#'
+            else if @src[j + 1] == '{' # we already know that @src[j]=='#'
                 # Interpolation
                 braceLevel = 1
                 unless interpStarted
-                    results.push @token 'interpStart', tripleDelimiter or delimiterChar
-                    interpStarted=true
-                results.push @token type, @src[i...j], i unless i==j
-                @i = j+2 # skip '#{'
+                    results.push @token 'interpStart',
+                        (tripleDelimiter or delimiterChar)
+                    interpStarted = true
+                results.push @token type, @src[i...j], i unless i == j
+                @i = j + 2 # skip '#{'
                 results.push @token 'interpEsc', null, j
                 loop # iterate until the escape "#{ ... }" is closed
                     x = @step()
                     if not x?
                         @complain "Unterminated interpolation"
-                    else if x.length==1 and (x_0=x[0]).t=='keyword'
-                        if (x_0_v=x_0.v) == '}'
+                    else if x.length == 1 and (x_0 = x[0]).t == 'keyword'
+                        if (x_0_v = x_0.v) == '}'
                             braceLevel--
-                            break if braceLevel==0
+                            break if braceLevel == 0
                         else if x_0_v == '{'
                             braceLevel++
                     results = results.concat (x)
-                i = @i; j = i-1
+                i = @i; j = i - 1
                 results.push @token 'interpUnesc', null, j
-        results.push @token 'interpEnd', tripleDelimiter or delimiterChar, @i-1 if interpStarted
+        if interpStarted
+            results.push @token 'interpEnd', tripleDelimiter or delimiterChar,
+                @i - 1
         return results
 
     #---------------------------------------------------------------------------
@@ -339,13 +348,13 @@ exports.Lexer = class Lexer
         i         = @i
         delimiter = @src[i]
         content   = null
-        if @src[i]==@src[i+1]==@src[i+2] # triple-delimiter string
+        if @src[i] == @src[i + 1] == @src[i + 2] # triple-delimiter string
             i += 3; j = i
             loop
-                j++ while j<@len and @src[j] != delimiter
-                if @src[j..j+2] == triple
+                j++ while j < @len and @src[j] != delimiter
+                if @src[j..j + 2] == triple
                     # TODO: check if triple quotes can be escaped with a '\'
-                    @i = j+3
+                    @i = j + 3
                     content = @reindentString @unescape @src[i...j]
                     break
                 else if j == @len
@@ -353,10 +362,10 @@ exports.Lexer = class Lexer
                 else
                     j += 2
         else # simple-delimiter string
-            i++; j=i
-            j++ until j>@len or @src[j] == delimiter and @src[j-1] != '\\'
+            i++; j = i
+            j++ until j > @len or @src[j] == delimiter and @src[j - 1] != '\\'
             @complain "unterminated #{type}" if j == @len
-            @i = j+1
+            @i = j + 1
             content = @unescape @src[i...j]
         return @token type, content, i
 
@@ -367,11 +376,11 @@ exports.Lexer = class Lexer
     getRegexFlags: ->
         return if @spaced
         MAX = 6
-        flags = @src[@i...@i+MAX].match(/^[imgy]*/)[0]
+        flags = @src[@i...@i + MAX].match(/^[imgy]*/)[0]
         len = flags.length
-        @complain "too many regex flags" if len==MAX
-        return null if len==0
-        offset=@i
+        @complain "too many regex flags" if len == MAX
+        return null if len == 0
+        offset = @i
         @i += len
         return @token 'regexFlags', flags, offset
 
@@ -382,10 +391,10 @@ exports.Lexer = class Lexer
     # TODO: sort words between keywords and identifiers.
     #---------------------------------------------------------------------------
     getWord: ->
-        i=@i
-        j=i+1
-        j++ while j<@len and @src[j].match /[A-Za-z0-9_]/
-        @i=j
+        i = @i
+        j = i + 1
+        j++ while j < @len and @src[j].match /[A-Za-z0-9_]/
+        @i = j
         content = @src[i...j]
         kind = if @keywords.hasWord(content) then 'keyword' else 'id'
         return @token kind, content, i
@@ -399,7 +408,7 @@ exports.Lexer = class Lexer
     getOp: ->
         for candidate in @keywords.startingWithSymbol(@src[@i])
             len = candidate.length
-            if @src[@i...@i+len] == candidate
+            if @src[@i...@i + len] == candidate
                 start = @i
                 @i += len
                 return @token 'keyword', candidate, start
@@ -413,7 +422,7 @@ exports.Lexer = class Lexer
     #---------------------------------------------------------------------------
     getNumber: ->
         MAX_SIZE = 32
-        x = @src[@i..@i+MAX_SIZE].match NUMBER
+        x = @src[@i..@i + MAX_SIZE].match NUMBER
         num = x?[0]
         @complain "number too long" if num.length > MAX_SIZE
         t = @token 'number', num
@@ -425,10 +434,11 @@ exports.Lexer = class Lexer
     # Return a single token.
     #---------------------------------------------------------------------------
     getJavaScript: ->
-        i = j = @i+1
-        ++j until (unterminated = j>=@len) or @src[j]=='`' and @src[j-1]!='\\'
+        i = j = @i + 1
+        ++j until (unterminated = j >= @len) or @src[j] == '`' and
+            @src[j - 1] != '\\'
         @complain "Unterminated javascript sequence" if unterminated
-        @i=j+1
+        @i = j + 1
         return @token 'javascript', @src[i...j]
 
 
@@ -454,7 +464,7 @@ exports.Lexer = class Lexer
     # Produce and throw a lexing error exception
     #---------------------------------------------------------------------------
     complain: (msg) ->
-        throw new Error "SyntaxError: "+msg
+        throw new Error "SyntaxError: " + msg
 
     #---------------------------------------------------------------------------
     # Fix indentation for triple-delimiter strings.
@@ -470,11 +480,11 @@ exports.Lexer = class Lexer
     #---------------------------------------------------------------------------
     regexAllowedHere: ->
         return false unless @spaced
-        i=@i+1
+        i = @i + 1
         loop
-            src_i=@src[i++]
-            return false if src_i=='\n'
-            return true  if src_i=='/'
+            src_i = @src[i++]
+            return false if src_i == '\n'
+            return true  if src_i == '/'
 
     #---------------------------------------------------------------------------
     # Retrieve a line number from an offset in @src.
@@ -491,7 +501,7 @@ exports.Lexer = class Lexer
     #
     #---------------------------------------------------------------------------
     offsetToLine: (offset) ->
-        lastLine   = @lineCache.length-1
+        lastLine   = @lineCache.length - 1
         lastOffset = @lineCache[lastLine]
 
         if offset < lastOffset # Retrieve from cache.
@@ -499,9 +509,9 @@ exports.Lexer = class Lexer
             # most recurring accesses will probably be made in sequence.
             for line_i in [lastLine..0]
                 offset_i = @lineCache[line_i]
-                return line_i+1 if offset > offset_i
+                return line_i + 1 if offset > offset_i
 
-        else if i>=@len
+        else if i >= @len
             return -1
 
         else # Extend cache
@@ -556,7 +566,7 @@ exports.Stream = class Stream
     peek: (n) ->
         n ?= 1
         # L.log 'lexer', "? peek #{@tokens[@readIndex+n]}\n"
-        return @tokens[@index+n] or @eof
+        return @tokens[@index + n] or @eof
 
     #---------------------------------------------------------------------------
     # Return the n-th next token, remove all tokens up to it from token stream.
@@ -564,10 +574,10 @@ exports.Stream = class Stream
     next: (n) ->
         n ?= 1
         result = @peek(n)
-        for tok in @tokens[@index+1 .. @index+n]
-                L.log 'lexer', ">>> consumed #{tok.t} #{tok.v ? ''}"
-                if (tok_t=tok.t) == 'indent' or tok_t == 'dedent'
-                    @currentIndentation = tok.v
+        for tok in @tokens[@index + 1 .. @index + n]
+            L.log 'lexer', ">>> consumed #{tok.t} #{tok.v ? ''}"
+            if (tok_t = tok.t) == 'indent' or tok_t == 'dedent'
+                @currentIndentation = tok.v
         @index += n
         return result or @eof
 
@@ -577,8 +587,8 @@ exports.Stream = class Stream
     indentation: (n) ->
         n ?= 1
         result = @currentIndentation
-        for tok in @tokens[@index+1 .. @index+n]
-            if (tok_t=tok.t) == 'indent' or tok_t == 'dedent'
+        for tok in @tokens[@index + 1 .. @index + n]
+            if (tok_t = tok.t) == 'indent' or tok_t == 'dedent'
                 result = tok.v
         return result
 
