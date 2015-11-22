@@ -1,4 +1,4 @@
-                @exports = @ unless process?
+    @exports = @ unless process?
 
     L = require './log'
 
@@ -197,37 +197,36 @@
 
 
 
-        # #-------------------------------------------------------------------------
-        # #
-        # # Specialized token extractors (called by @step()).
-        # #
-        #-#-------------------------------------------------------------------------
-
-
+## Specialized token extractors (called by @step()).
 
  Generate indent/dedent/newline tokens.
  Return a list of one or several tokens.
 
  The method is cut in two stages:
- 1- Determine indentation on the new line:
+ 1. Determine indentation on the new line:
     loop until a line with some non-blank, non-comment characters is found
     (i.e. comments-only lines are skipped)
     i = beginning of line, j = first non-indentation char
- 2- Compare @ current indentation with previous ones, kept in list
+ 2. Compare @ current indentation with previous ones, kept in list
     @indenLevels
+
 
  Until the first indentation character is found, both '\t' and ' ' are
  accepted. After one of these characters has been found, the other
  becomes illegal for indentation in the whole file.
 
-        getNewlines: ->
- 1- determine indentation
+ ### 1. determine indentation
+
+         getNewlines: ->
+
             offset = i = @i
             loop
                 i++ while @src[i] == '\n'
                 if not @indentChar?
                     src_i = @src[i]
+
  Determine the indentation char (' ' or '\t')
+
                     if src_i == '\t'
                         @indentChar = '\t'
                         @forbiddenIndentChar = ' '
@@ -251,7 +250,8 @@
                     @complain "don't mix tabs and spaces in indentation"
                 else break
 
- 2- generate tokens
+ ### 2. generate tokens
+
             @i = j
             indentLevel = j - i
             lastIndentLevelIdx = @indentLevels.length - 1
@@ -302,12 +302,16 @@
                             @i = j + 3
                         else continue
                     else @i = j + 1
+
  End of string
+
                     unless i == j and results.length > 0
                         results.push @token type, @src[i...j], i
                     break
                 else if @src[j + 1] == '{' # we already know that @src[j]=='#'
+
  Interpolation
+
                     braceLevel = 1
                     unless interpStarted
                         results.push @token 'interpStart',
@@ -351,7 +355,9 @@
                 loop
                     j++ while j < @len and @src[j] != delimiter
                     if @src[j..j + 2] == triple
- TODO: check if triple quotes can be escaped with a '\'
+
+TODO: check if triple quotes can be escaped with a '\'
+
                         @i = j + 3
                         content = @reindentString @unescape @src[i...j]
                         break
@@ -439,16 +445,7 @@
             @i = j + 1
             return @token 'javascript', @src[i...j]
 
-
-
-
-        # #-------------------------------------------------------------------------
-        # #
-        # # Misc. helpers
-        # #
-        #-#-------------------------------------------------------------------------
-
-
+## Misc. helpers
 
  Revert escape sequences in a string content into the chars they stand for.
 
@@ -487,8 +484,8 @@
 
  Retrieve a line number from an offset in @src.
 
- `lineCache' associates a line number to the offset of that line's
- first character. '\n' chars are considered part of the previous line.
+ `lineCache` associates a line number to the offset of that line's
+ first character. `\n` chars are considered part of the previous line.
 
  The rationales behind calculating line numbers on demand are:
   * it's easier to keep track of offset than lines in the lexer code;
@@ -503,8 +500,10 @@
             lastOffset = @lineCache[lastLine]
 
             if offset < lastOffset # Retrieve from cache.
+
  It could be done faster by dichotomy in theory; but in practice,
  most recurring accesses will probably be made in sequence.
+
                 for line_i in [lastLine..0]
                     offset_i = @lineCache[line_i]
                     return line_i + 1 if offset > offset_i
@@ -520,34 +519,26 @@
                 return lastLine
 
  line number, starting at 0 -> offset cache, used by @offsetToLine
+
         lineCache: [-1]
 
-
-
-
-    # #-----------------------------------------------------------------------------
-    # #
-    # # Stream reading API.
-    # #
-    #-#-----------------------------------------------------------------------------
+## Stream reading API.
 
     exports.Stream = class Stream
 
 
  Stream public interface:
- @peek(n): return the n-th token without consuming it. n?=1.
- @next(n): consume and return the n-th token. n?=1.
- @indentation(n): return indentation level of the n-th token. n?=1.
- @save(): return a state, allowing to restore the current stream's state.
- @restore(state): revert any changes made since @save returned state.
+ - @peek(n): return the n-th token without consuming it. n?=1.
+ - @next(n): consume and return the n-th token. n?=1.
+ - @indentation(n): return indentation level of the n-th token. n?=1.
+ - @save(): return a state, allowing to restore the current stream's state.
+ - @restore(state): revert any changes made since @save returned state.
 
 
  field index: index of last consummed token in @tokens
  field tokens: all tokens produced by the lexer
- field currentIndentation: indentation of the last consummed token
+ field currentIndentation: indentation of the last consumed token
 
-
----------------------------------------------------------------------------
         constructor: (lexer) ->
             @tokens = lexer.tokenize()
             @index  = -1
@@ -566,7 +557,6 @@
             # L.log 'lexer', "? peek #{@tokens[@readIndex+n]}\n"
             return @tokens[@index + n] or @eof
 
-
  Return the n-th next token, remove all tokens up to it from token stream.
 
         next: (n) ->
@@ -579,7 +569,6 @@
             @index += n
             return result or @eof
 
-
  Return the indentation level of the n-th next token.
 
         indentation: (n) ->
@@ -589,7 +578,6 @@
                 if (tok_t = tok.t) == 'indent' or tok_t == 'dedent'
                     result = tok.v
             return result
-
 
  Save and restore reading positions.
  Allow a parser to undo some readings in case of late failure.
